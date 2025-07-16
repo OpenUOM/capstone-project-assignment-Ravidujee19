@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, NavigationExtras } from '@angular/router';
-import {AppServiceService} from '../../app-service.service';
+import { Router } from '@angular/router';
+import { AppServiceService } from '../../app-service.service';
 
 @Component({
   selector: 'app-edit-student',
@@ -11,33 +11,41 @@ export class EditStudentComponent implements OnInit {
 
   studentData: any;
 
-
-  constructor(private service : AppServiceService, private router: Router) { }
-
-  navigation = this.router.getCurrentNavigation();
+  constructor(private service: AppServiceService, private router: Router) {}
 
   ngOnInit(): void {
     this.getStudentData();
   }
 
-  getStudentData(){
-    let student = {
-      id : this.navigation.extras.state.id
+  getStudentData() {
+    const studentId = history.state.id;
+
+    if (!studentId) {
+      console.error('No student ID provided in navigation state.');
+      return;
     }
-    this.service.getOneStudentData(student).subscribe((response)=>{
-      this.studentData = response[0];
-    },(error)=>{
-      console.log('ERROR - ', error)
-    })
+
+    this.service.getOneStudentData({ id: studentId }).subscribe(
+      (response) => {
+        this.studentData = response[0];
+      },
+      (error) => {
+        console.log('ERROR - ', error);
+      }
+    );
   }
 
-  editStudent(values){
-    values.id = this.navigation.extras.state.id;
-    this.service.editStudent(values).subscribe((response)=>{
-      this.studentData = response[0];
-    },(error)=>{
-      console.log('ERROR - ', error)
-    })
-  }
+  editStudent(values: any) {
+    values.id = history.state.id;
 
+    this.service.editStudent(values).subscribe(
+      (response) => {
+        console.log('Student updated successfully');
+        this.router.navigate(['studentTable']); // Optional redirect
+      },
+      (error) => {
+        console.log('ERROR - ', error);
+      }
+    );
+  }
 }
